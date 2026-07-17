@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google-adsense-account" content="ca-pub-5289823328523789">
+    <title>Crypto Trend Predictor</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; }
+
+        :root {
+            --bg: #0b0f1a;
+            --card: #141826;
+            --card-inner: #0e1220;
+            --border: #1f2436;
+            --text: #e8eaf0;
+            --text-dim: #9aa0ae;
+            --text-faint: #575c6b;
+            --accent: #7c8cff;
+        }
+        body.light {
+            --bg: #f3f4f6;
+            --card: #ffffff;
+            --card-inner: #f7f8fa;
+            --border: #e5e7eb;
+            --text: #14171f;
+            --text-dim: #6b7280;
+            --text-faint: #9ca3af;
+            --accent: #4f5eea;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 32px 16px 60px;
+            transition: background 0.2s, color 0.2s;
+        }
+        .container { max-width: 780px; margin: 0 auto; }
+        header { text-align: center; margin-bottom: 24px; position: relative; }
+
+        .theme-toggle {
+            position: absolute; top: 0; right: 0;
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 10px; width: 40px; height: 40px; cursor: pointer;
+            font-size: 18px; color: var(--text);
+        }
+
+        .eyebrow { font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-dim); font-weight: 600; margin-bottom: 10px; }
+        h1 {
+            font-size: 30px; font-weight: 700;
+            background: linear-gradient(90deg, #7c8cff, #b17cff);
+            -webkit-background-clip: text; background-clip: text; color: transparent;
+            margin-bottom: 6px;
+        }
+        .updated { font-size: 12px; color: var(--text-faint); margin-bottom: 18px; }
+
+        .controls { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; align-items: center; margin-bottom: 8px; }
+        select {
+            appearance: none; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500;
+            padding: 10px 34px 10px 16px; border-radius: 10px; border: 1px solid var(--border);
+            background: var(--card); color: var(--text); cursor: pointer;
+        }
+        .timeframe { display: inline-flex; background: var(--card); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+        .timeframe button {
+            font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+            padding: 10px 16px; background: transparent; border: none; color: var(--text-dim); cursor: pointer;
+        }
+        .timeframe button.active { background: var(--accent); color: #fff; }
+
+        .history-link { font-size: 13px; color: var(--accent); text-decoration: none; font-weight: 600; display: inline-block; margin-top: 14px; }
+
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 22px; margin-bottom: 18px; }
+        .chart-wrap { height: 240px; position: relative; }
+        .chart-spinner { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+        .chart-spinner .spinner { width: 28px; height: 28px; border-width: 3px; }
+        #priceChart { transition: opacity 0.3s ease; }
+
+        .price-row { display: flex; gap: 14px; flex-wrap: wrap; }
+        .price-block { flex: 1; min-width: 130px; padding: 16px; background: var(--card-inner); border-radius: 14px; text-align: center; }
+        .price-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim); font-weight: 600; margin-bottom: 8px; }
+        .price-value { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; }
+        .price-value.small { font-size: 16px; }
+        .badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; margin-top: 8px; }
+        .up { color: #15a56e; background: rgba(61, 220, 151, 0.14); }
+        .down { color: #e0483f; background: rgba(255, 107, 107, 0.14); }
+        .up-text { color: #15a56e; }
+        .down-text { color: #e0483f; }
+        .vol-low { color: #15a56e; background: rgba(61, 220, 151, 0.14); }
+        .vol-medium { color: #b8860b; background: rgba(245, 184, 73, 0.14); }
+        .vol-high { color: #e0483f; background: rgba(255, 107, 107, 0.14); }
+
+        .alert-banner {
+            display: none; background: rgba(245, 184, 73, 0.14); border: 1px solid #f5b849;
+            color: #b8860b; padding: 14px 18px; border-radius: 12px; font-size: 14px; margin-bottom: 18px; font-weight: 600;
+        }
+        .alert-banner.show { display: block; }
+        .alert-form { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+        .alert-form input {
+            font-family: 'Inter', sans-serif; font-size: 14px; padding: 10px 14px; border-radius: 10px;
+            border: 1px solid var(--border); background: var(--card-inner); color: var(--text); width: 130px;
+        }
+        .alert-form select { padding: 10px 30px 10px 14px; }
+        .alert-form button {
+            font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; padding: 10px 18px;
+            border-radius: 10px; border: none; background: var(--accent); color: #fff; cursor: pointer;
+        }
+        .alert-current { font-size: 12px; color: var(--text-dim); margin-top: 8px; }
+
+        .holding-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 14px;
+        }
+        .holding-row:last-child { border-bottom: none; }
+        .holding-remove { background: none; border: none; color: var(--text-faint); cursor: pointer; font-size: 13px; padding: 4px 8px; }
+        .holding-remove:hover { color: #e0483f; }
+
+        .news-item { display: block; padding: 12px 0; text-decoration: none; color: var(--text); border-bottom: 1px solid var(--border); font-size: 14px; }
+        .news-item:last-child { border-bottom: none; }
+        .news-item:hover { color: var(--accent); }
+        .news-error { font-size: 13px; color: var(--text-dim); padding: 8px 0; }
+
+        .disclaimer { font-size: 13px; color: var(--text-dim); text-align: center; line-height: 1.6; margin-top: 20px; padding: 0 12px; }
+
+        .loading-overlay {
+            display: none; position: fixed; inset: 0; background: rgba(11, 15, 26, 0.75);
+            z-index: 999; align-items: center; justify-content: center; flex-direction: column; gap: 14px;
+        }
+        .loading-overlay.show { display: flex; }
+        .spinner { width: 34px; height: 34px; border: 3px solid #262b3d; border-top-color: #7c8cff; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-overlay span { font-size: 13px; color: #9aa0ae; }
+
+        @media (max-width: 480px) {
+            h1 { font-size: 24px; }
+            .card { padding: 16px; border-radius: 14px; }
+            .chart-wrap { height: 200px; }
+            .price-block { min-width: 100%; }
+            .alert-form input, .alert-form select { width: 100%; }
+            .alert-form { flex-direction: column; align-items: stretch; }
+            .theme-toggle { position: static; margin-bottom: 12px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <span>Fetching latest data…</span>
+    </div>
+
+    <div class="container">
+        <header>
+            <button class="theme-toggle" id="themeToggle" title="Toggle light/dark mode">🌙</button>
+            <div class="eyebrow">AI trend predictor</div>
+            <h1>{{ coin }}{% if compare_name %} vs {{ compare_name }}{% endif %}</h1>
+            <div class="updated">Last updated {{ last_updated }}</div>
+
+            <form id="controlsForm" method="get" action="/" onsubmit="showLoading()">
+                <div class="controls">
+                    <select name="coin" onchange="showLoading(); this.form.submit()">
+                        {% for id, name in available_coins.items() %}
+                            <option value="{{ id }}" {% if id == coin_id %}selected{% endif %}>{{ name }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <select name="compare" onchange="showLoading(); this.form.submit()">
+                        <option value="">Compare: none</option>
+                        {% for id, name in available_coins.items() %}
+                            {% if id != coin_id %}
+                                <option value="{{ id }}" {% if id == compare_id %}selected{% endif %}>vs {{ name }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+
+                    <div class="timeframe">
+                        <button type="submit" name="days" value="7" class="{{ 'active' if days == 7 }}" onclick="showLoading()">7D</button>
+                        <button type="submit" name="days" value="30" class="{{ 'active' if days == 30 }}" onclick="showLoading()">30D</button>
+                        <button type="submit" name="days" value="90" class="{{ 'active' if days == 90 }}" onclick="showLoading()">90D</button>
+                    </div>
+                </div>
+            </form>
+
+            <a class="history-link" href="/history?coin={{ coin_id }}">See past predictions vs. what actually happened →</a>
+            <br>
+            <a class="history-link" href="/about">How this actually works →</a>
+        </header>
+
+        <div class="alert-banner" id="alertBanner"></div>
+
+        <div class="card">
+            <div class="chart-wrap">
+                <div class="chart-spinner" id="chartSpinner"><div class="spinner"></div></div>
+                <canvas id="priceChart" style="opacity: 0;"></canvas>
+            </div>
+        </div>
+
+        <div class="card price-row">
+            <div class="price-block">
+                <div class="price-label">Current price</div>
+                <div class="price-value">${{ current }}</div>
+            </div>
+            <div class="price-block">
+                <div class="price-label">24h change</div>
+                <div class="price-value small {{ 'up-text' if change_24h and change_24h >= 0 else 'down-text' }}">
+                    {% if change_24h is not none %}{{ '%.2f'|format(change_24h) }}%{% else %}N/A{% endif %}
+                </div>
+            </div>
+            <div class="price-block">
+                <div class="price-label">7d change</div>
+                <div class="price-value small {{ 'up-text' if change_7d and change_7d >= 0 else 'down-text' }}">
+                    {% if change_7d is not none %}{{ '%.2f'|format(change_7d) }}%{% else %}N/A{% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="card price-row">
+            <div class="price-block">
+                <div class="price-label">Predicted next price</div>
+                <div class="price-value">${{ predicted }}</div>
+                <div class="badge {{ 'up' if percent_change >= 0 else 'down' }}">
+                    {{ '▲' if percent_change >= 0 else '▼' }} {{ percent_change_abs }}%
+                </div>
+            </div>
+            <div class="price-block">
+                <div class="price-label">Volatility ({{ days }}d)</div>
+                <div class="price-value small">{{ volatility_label }}</div>
+                <div class="badge vol-{{ volatility_label|lower }}">±{{ volatility_pct }}% swing</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="price-label" style="margin-bottom: 12px;">What's feeding this prediction</div>
+            <div class="price-row">
+                <div class="price-block">
+                    <div class="price-label">Model blend</div>
+                    <div class="price-value small">{{ trend_weight }}% trend / {{ momentum_weight }}% momentum / {{ crossover_weight }}% crossover</div>
+                </div>
+                <div class="price-block">
+                    <div class="price-label">Fear &amp; Greed Index</div>
+                    <div class="price-value small">
+                        {% if fear_greed %}{{ fear_greed.value }} — {{ fear_greed.label }}{% else %}N/A{% endif %}
+                    </div>
+                </div>
+                <div class="price-block">
+                    <div class="price-label">News sentiment</div>
+                    <div class="price-value small {{ 'up-text' if sentiment_score > 0 else ('down-text' if sentiment_score < 0 else '') }}">
+                        {% if sentiment_score > 0 %}Slightly positive{% elif sentiment_score < 0 %}Slightly negative{% else %}Neutral{% endif %}
+                    </div>
+                </div>
+                <div class="price-block">
+                    <div class="price-label">Google search interest</div>
+                    <div class="price-value small">
+                        {% if search_interest is not none %}{{ search_interest }}/100{% else %}N/A{% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="alert-current" style="margin-top: 10px;">
+                The model blend adapts over time based on which method (trend line vs. recent
+                momentum) has actually predicted this coin better recently. Fear &amp; Greed,
+                sentiment, and search interest are shown for context, not currently used to
+                move the number itself.
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="price-label" style="margin-bottom: 12px;">Set a price alert for {{ coin }}</div>
+            <div class="alert-form">
+                <select id="alertDirection">
+                    <option value="above">Alert when above</option>
+                    <option value="below">Alert when below</option>
+                </select>
+                <input type="number" id="alertPrice" placeholder="e.g. 50000" step="any">
+                <button onclick="setAlert()">Save alert</button>
+            </div>
+            <div class="alert-current" id="alertCurrentText"></div>
+        </div>
+
+        <div class="card" style="text-align: center;">
+            <div class="price-label" style="margin-bottom: 10px;">Want to check your holdings?</div>
+            <a class="history-link" href="/portfolio">Open the portfolio tracker →</a>
+        </div>
+
+        {% if news_items %}
+        <div class="card">
+            <div class="price-label" style="margin-bottom: 6px;">Latest crypto news</div>
+            {% for item in news_items %}
+                <a class="news-item" href="{{ item.link }}" target="_blank" rel="noopener">{{ item.title }}</a>
+            {% endfor %}
+        </div>
+        {% elif news_error %}
+        <div class="card">
+            <div class="price-label" style="margin-bottom: 6px;">Latest crypto news</div>
+            <div class="news-error">{{ news_error }}</div>
+        </div>
+        {% endif %}
+
+        <p class="disclaimer">
+            The prediction blends three simple methods -- a weighted trend line, a
+            short-term momentum estimate, and a moving-average crossover (a classic
+            technical-analysis signal) -- automatically leaning toward whichever has
+            actually been more accurate for this coin recently. It still can't account
+            for news events, whale trades, or anything that genuinely drives crypto
+            markets. Higher volatility means less trustworthy either way. Built as a
+            learning project, not financial advice.
+        </p>
+    </div>
+
+    <script>
+        function showLoading() {
+            document.getElementById('loadingOverlay').classList.add('show');
+        }
+
+        // --- Theme toggle ---
+        const themeToggle = document.getElementById('themeToggle');
+        function applyTheme(theme) {
+            document.body.classList.toggle('light', theme === 'light');
+            themeToggle.textContent = theme === 'light' ? '☀️' : '🌙';
+        }
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        applyTheme(savedTheme);
+        themeToggle.addEventListener('click', () => {
+            const newTheme = document.body.classList.contains('light') ? 'dark' : 'light';
+            localStorage.setItem('theme', newTheme);
+            applyTheme(newTheme);
+        });
+
+        // --- Price alerts (stored locally in this browser) ---
+        const coinId = "{{ coin_id }}";
+        const currentPrice = {{ current }};
+        const alertKey = 'alert_' + coinId;
+
+        function setAlert() {
+            const price = parseFloat(document.getElementById('alertPrice').value);
+            const direction = document.getElementById('alertDirection').value;
+            if (!price || price <= 0) {
+                alert('Enter a valid price first.');
+                return;
+            }
+            localStorage.setItem(alertKey, JSON.stringify({ price, direction }));
+            checkAlert();
+        }
+
+        function checkAlert() {
+            const saved = localStorage.getItem(alertKey);
+            const banner = document.getElementById('alertBanner');
+            const currentText = document.getElementById('alertCurrentText');
+            if (!saved) { banner.classList.remove('show'); currentText.textContent = ''; return; }
+
+            const { price, direction } = JSON.parse(saved);
+            currentText.textContent = `Current alert: notify when ${coinId} is ${direction} $${price.toLocaleString()}`;
+
+            const triggered = direction === 'above' ? currentPrice >= price : currentPrice <= price;
+            if (triggered) {
+                banner.textContent = `🔔 Alert triggered: ${coinId} is now ${direction === 'above' ? 'at or above' : 'at or below'} $${price.toLocaleString()} (current: $${currentPrice.toLocaleString()})`;
+                banner.classList.add('show');
+            } else {
+                banner.classList.remove('show');
+            }
+        }
+        checkAlert();
+
+        // --- Chart ---
+        const ctx = document.getElementById('priceChart');
+        const datasets = [{
+            label: '{{ coin }}',
+            data: {{ prices | tojson }},
+            borderColor: '#7c8cff',
+            backgroundColor: 'rgba(124, 140, 255, 0.12)',
+            borderWidth: 2,
+            tension: 0.3,
+            fill: true,
+            pointRadius: 0,
+            pointHoverRadius: 5
+        }];
+
+        {% if compare_prices %}
+        datasets.push({
+            label: '{{ compare_name }}',
+            data: {{ compare_prices | tojson }},
+            borderColor: '#f5b849',
+            backgroundColor: 'rgba(245, 184, 73, 0.08)',
+            borderWidth: 2,
+            tension: 0.3,
+            fill: true,
+            pointRadius: 0,
+            pointHoverRadius: 5,
+            yAxisID: 'y1'
+        });
+        {% endif %}
+
+        new Chart(ctx, {
+            type: 'line',
+            data: { labels: {{ dates | tojson }}, datasets: datasets },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: {{ 'true' if compare_prices else 'false' }}, labels: { color: '#9aa0ae' } } },
+                scales: {
+                    x: { grid: { color: '#1f2436' }, ticks: { color: '#6d7280', maxTicksLimit: 6 } },
+                    y: { grid: { color: '#1f2436' }, ticks: { color: '#6d7280', callback: v => '$' + v.toLocaleString() } }
+                    {% if compare_prices %}
+                    , y1: { position: 'right', grid: { display: false }, ticks: { color: '#6d7280', callback: v => '$' + v.toLocaleString() } }
+                    {% endif %}
+                },
+                animation: {
+                    onComplete: function () {
+                        document.getElementById('chartSpinner').style.display = 'none';
+                        ctx.style.opacity = '1';
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Trend Predictor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; }
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: #0b0f1a; color: #e8eaf0; min-height: 100vh;
+            display: flex; align-items: center; justify-content: center; padding: 20px;
+        }
+        .card { background: #141826; border: 1px solid #1f2436; border-radius: 18px; padding: 36px; max-width: 420px; text-align: center; }
+        h1 { font-size: 20px; margin-bottom: 12px; }
+        p { color: #9aa0ae; font-size: 14px; line-height: 1.6; margin-bottom: 24px; }
+        a { display: inline-block; padding: 10px 20px; background: #7c8cff; color: #0b0f1a; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Couldn't load price data</h1>
+        <p>{{ message }}</p>
+        <a href="/?coin={{ coin_id }}">Try again</a>
+    </div>
+</body>
+</html>

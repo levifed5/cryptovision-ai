@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Tracker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; }
+        body { font-family: 'Inter', -apple-system, sans-serif; background: #0b0f1a; color: #e8eaf0; min-height: 100vh; padding: 40px 16px; }
+        .container { max-width: 640px; margin: 0 auto; }
+        header { text-align: center; margin-bottom: 24px; }
+        .eyebrow { font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: #6d7280; font-weight: 600; margin-bottom: 10px; }
+        h1 { font-size: 26px; font-weight: 700; margin-bottom: 10px; }
+        .back-link { font-size: 13px; color: #7c8cff; text-decoration: none; font-weight: 600; }
+        .sub { font-size: 13px; color: #6d7280; margin-top: 8px; }
+
+        .card { background: #141826; border: 1px solid #1f2436; border-radius: 18px; padding: 8px 0; margin-top: 20px; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th, td { padding: 12px 16px; text-align: left; }
+        th { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #6d7280; font-weight: 600; }
+        tr:not(:last-child) td { border-bottom: 1px solid #1f2436; }
+        input {
+            width: 100px; font-family: 'Inter', sans-serif; font-size: 14px; padding: 8px 10px;
+            border-radius: 8px; border: 1px solid #262b3d; background: #0e1220; color: #e8eaf0;
+        }
+        .value-cell { font-variant-numeric: tabular-nums; font-weight: 600; }
+
+        .total-card {
+            background: #141826; border: 1px solid #1f2436; border-radius: 18px; padding: 24px;
+            margin-top: 16px; text-align: center;
+        }
+        .total-label { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: #6d7280; font-weight: 600; margin-bottom: 8px; }
+        .total-value { font-size: 32px; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+        .disclaimer { font-size: 12px; color: #575c6b; text-align: center; margin-top: 20px; line-height: 1.6; }
+        @media (max-width: 480px) { h1 { font-size: 22px; } th, td { padding: 10px 8px; font-size: 13px; } input { width: 80px; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="eyebrow">Just a calculator</div>
+            <h1>Portfolio tracker</h1>
+            <a class="back-link" href="/">← Back to predictor</a> · <a class="back-link" href="/about">How this works</a>
+            <div class="sub">Enter how much of each coin you hold to see its current value. Nothing is sent anywhere — it's saved only in this browser.</div>
+        </header>
+
+        <div class="card">
+            <table>
+                <tr><th>Coin</th><th>Price</th><th>Amount you hold</th><th>Value</th></tr>
+                {% for id, name in available_coins.items() %}
+                <tr>
+                    <td>{{ name }}</td>
+                    <td>${{ '%.2f'|format(prices[id]) if prices[id] else 'N/A' }}</td>
+                    <td>
+                        <input type="number" step="any" min="0" class="holding-input"
+                               data-coin="{{ id }}" data-price="{{ prices[id] or 0 }}"
+                               placeholder="0">
+                    </td>
+                    <td class="value-cell" id="value-{{ id }}">$0.00</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+
+        <div class="total-card">
+            <div class="total-label">Total portfolio value</div>
+            <div class="total-value" id="totalValue">$0.00</div>
+        </div>
+
+        <p class="disclaimer">This is just a simple calculator using current prices — it does not track real ownership or connect to any wallet or exchange.</p>
+    </div>
+
+    <script>
+        const inputs = document.querySelectorAll('.holding-input');
+
+        function loadSaved() {
+            inputs.forEach(input => {
+                const coin = input.dataset.coin;
+                const saved = localStorage.getItem('holding_' + coin);
+                if (saved) input.value = saved;
+            });
+        }
+
+        function recalculate() {
+            let total = 0;
+            inputs.forEach(input => {
+                const coin = input.dataset.coin;
+                const price = parseFloat(input.dataset.price) || 0;
+                const amount = parseFloat(input.value) || 0;
+                const value = price * amount;
+                total += value;
+                document.getElementById('value-' + coin).textContent = '$' + value.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                localStorage.setItem('holding_' + coin, input.value || '');
+            });
+            document.getElementById('totalValue').textContent = '$' + total.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        }
+
+        inputs.forEach(input => input.addEventListener('input', recalculate));
+        loadSaved();
+        recalculate();
+    </script>
+</body>
+</html>

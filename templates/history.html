@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prediction History</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; }
+        body { font-family: 'Inter', -apple-system, sans-serif; background: #0b0f1a; color: #e8eaf0; min-height: 100vh; padding: 40px 16px; }
+        .container { max-width: 640px; margin: 0 auto; }
+        header { text-align: center; margin-bottom: 24px; }
+        .eyebrow { font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: #6d7280; font-weight: 600; margin-bottom: 10px; }
+        h1 { font-size: 24px; font-weight: 700; margin-bottom: 14px; }
+        .back-link { font-size: 13px; color: #7c8cff; text-decoration: none; font-weight: 600; }
+        select {
+            appearance: none; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500;
+            padding: 10px 34px 10px 16px; border-radius: 10px; border: 1px solid #262b3d;
+            background: #141826; color: #e8eaf0; cursor: pointer; margin-top: 14px;
+        }
+        .card { background: #141826; border: 1px solid #1f2436; border-radius: 18px; padding: 8px 0; margin-top: 20px; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th, td { padding: 12px 16px; text-align: left; white-space: nowrap; }
+        th { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #6d7280; font-weight: 600; }
+        tr:not(:last-child) td { border-bottom: 1px solid #1f2436; }
+        .up { color: #3ddc97; }
+        .down { color: #ff6b6b; }
+        .muted { color: #575c6b; }
+        .empty { text-align: center; padding: 40px 20px; color: #6d7280; font-size: 14px; }
+        @media (max-width: 480px) { h1 { font-size: 20px; } th, td { padding: 10px 12px; font-size: 13px; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="eyebrow">Prediction accuracy</div>
+            <h1>{{ coin }} — predicted vs. actual</h1>
+            <a class="back-link" href="/?coin={{ coin_id }}">← Back to predictor</a> · <a class="back-link" href="/about">How this works</a><br>
+            <form method="get" action="/history">
+                <select name="coin" onchange="this.form.submit()">
+                    {% for id, name in available_coins.items() %}
+                        <option value="{{ id }}" {% if id == coin_id %}selected{% endif %}>{{ name }}</option>
+                    {% endfor %}
+                </select>
+            </form>
+        </header>
+
+        <div class="card">
+            {% if records %}
+            <table>
+                <tr><th>Date predicted for</th><th>Predicted</th><th>Actual</th><th>Error</th></tr>
+                {% for r in records %}
+                <tr>
+                    <td>{{ r.date }}</td>
+                    <td>${{ r.predicted }}</td>
+                    <td>{% if r.actual is not none %}${{ r.actual }}{% else %}<span class="muted">pending</span>{% endif %}</td>
+                    <td>{% if r.error_pct is not none %}<span class="{{ 'up' if r.error_pct < 5 else 'down' }}">{{ r.error_pct }}%</span>{% else %}<span class="muted">—</span>{% endif %}</td>
+                </tr>
+                {% endfor %}
+            </table>
+            {% else %}
+            <div class="empty">
+                No predictions recorded yet for {{ coin }}. Visit the predictor page for
+                this coin, and it'll start logging a prediction each day —
+                come back tomorrow to see how it did.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

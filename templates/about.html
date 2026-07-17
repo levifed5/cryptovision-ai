@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google-adsense-account" content="ca-pub-5289823328523789">
+    <title>About &amp; How It Works — CoinSight</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; }
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: #0b0f1a; color: #e8eaf0; min-height: 100vh;
+            padding: 40px 16px 60px;
+        }
+        .container { max-width: 680px; margin: 0 auto; }
+        header { text-align: center; margin-bottom: 32px; }
+        .eyebrow { font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: #6d7280; font-weight: 600; margin-bottom: 10px; }
+        h1 {
+            font-size: 28px; font-weight: 700;
+            background: linear-gradient(90deg, #7c8cff, #b17cff);
+            -webkit-background-clip: text; background-clip: text; color: transparent;
+            margin-bottom: 8px;
+        }
+        .back-link { font-size: 13px; color: #7c8cff; text-decoration: none; font-weight: 600; }
+
+        .card { background: #141826; border: 1px solid #1f2436; border-radius: 18px; padding: 26px; margin-bottom: 18px; }
+        h2 { font-size: 18px; font-weight: 700; margin-bottom: 12px; color: #e8eaf0; }
+        p { font-size: 14.5px; line-height: 1.7; color: #c4c8d4; margin-bottom: 12px; }
+        p:last-child { margin-bottom: 0; }
+        ul { margin: 0 0 12px 20px; }
+        li { font-size: 14.5px; line-height: 1.7; color: #c4c8d4; margin-bottom: 6px; }
+        strong { color: #e8eaf0; }
+        .highlight { color: #7c8cff; font-weight: 600; }
+
+        .disclaimer-box {
+            background: rgba(245, 184, 73, 0.08); border: 1px solid rgba(245, 184, 73, 0.3);
+            border-radius: 14px; padding: 20px;
+        }
+        .disclaimer-box p { color: #e8d5b0; }
+
+        @media (max-width: 480px) { h1 { font-size: 22px; } .card { padding: 18px; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="eyebrow">About this project</div>
+            <h1>How CoinSight actually works</h1>
+            <a class="back-link" href="/">← Back to predictor</a>
+        </header>
+
+        <div class="card">
+            <h2>What this site is</h2>
+            <p>
+                CoinSight is a personal project built to learn how real crypto price data,
+                simple prediction models, and full web apps fit together. It tracks live
+                prices for 14 cryptocurrencies, generates a short-term price estimate for
+                each one, and — maybe most importantly — keeps an honest, public log of
+                how those estimates actually turn out, so you can judge for yourself
+                whether they're any good.
+            </p>
+            <p>
+                It is <strong>not</strong> a trading tool, a signal service, or financial
+                advice. It's closer to a transparent experiment in what simple, freely
+                available methods can (and mostly can't) do when it comes to predicting
+                something as chaotic as crypto prices.
+            </p>
+        </div>
+
+        <div class="card">
+            <h2>How the prediction is actually made</h2>
+            <p>
+                Each prediction blends three simple, well-established statistical and
+                technical-analysis techniques:
+            </p>
+            <ul>
+                <li><strong>Trend line</strong> — fits a straight line through recent daily prices, weighted so the most recent days count more than older ones, then extends that line one day forward.</li>
+                <li><strong>Momentum</strong> — looks at the average daily percent change over the last several days and assumes that pace continues for one more day.</li>
+                <li><strong>Moving-average crossover</strong> — a classic technique real traders use: compares a short-term average price to a longer-term one. When the short-term average is above the long-term one, that's traditionally read as a mildly bullish signal, and vice versa.</li>
+            </ul>
+            <p>
+                Rather than picking one method and sticking with it forever, the site
+                <span class="highlight">tracks how accurate each method has actually been</span>
+                for each specific coin, using its own logged prediction history, and
+                automatically leans more on whichever one has performed better recently.
+                That blend ratio is shown openly on the predictor page — it's not fixed,
+                and it will keep shifting as more real data comes in.
+            </p>
+        </div>
+
+        <div class="card">
+            <h2>The extra signals you'll see</h2>
+            <p>These are shown for context and transparency — they are not currently used to change the predicted number itself:</p>
+            <ul>
+                <li><strong>Fear &amp; Greed Index</strong> — a widely-used public sentiment gauge (0–100) reflecting the crypto market's overall emotional mood, built from things like volatility, trading volume, and social activity.</li>
+                <li><strong>Google search interest</strong> — how much people are currently searching for a coin, as a rough gauge of public attention.</li>
+                <li><strong>News sentiment</strong> — a simple keyword-based scan of recent headlines, counting positive-sounding vs. negative-sounding words. It's intentionally basic and has no real understanding of context or nuance.</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h2>Why there's a history page</h2>
+            <p>
+                Every day, the site logs its own prediction for each coin. Once the next
+                day actually happens, that prediction gets compared against the real
+                price. The <a href="/history" style="color:#7c8cff;">history page</a>
+                shows this openly — including when the model was wrong, not just when it
+                was right. The goal isn't to make the predictions look impressive; it's to
+                be honest about how hard this problem actually is.
+            </p>
+        </div>
+
+        <div class="card disclaimer-box">
+            <h2 style="color:#e8d5b0;">Please read this part</h2>
+            <p>
+                Short-term cryptocurrency price movement is influenced by news, regulation,
+                large trades, and shifts in sentiment that no simple model — including this
+                one — can see coming. Nothing on this site is financial advice, and nothing
+                here should be used as the basis for a real financial decision. If you're
+                making investment decisions, please consult a licensed financial advisor
+                and do your own research.
+            </p>
+        </div>
+    </div>
+</body>
+</html>
